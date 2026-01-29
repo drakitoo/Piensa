@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeCards - Aprende a Programar Jugando</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1a202c;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            flex: 1;
+            min-width: 200px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #718096;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #667eea;
+        }
+
+        .challenge-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .challenge-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .difficulty-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .difficulty-facil { background: #c6f6d5; color: #22543d; }
+        .difficulty-medio { background: #feebc8; color: #7c2d12; }
+        .difficulty-dificil { background: #fed7d7; color: #742a2a; }
+
+        .challenge-description {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+
+        .challenge-description h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .challenge-description p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cards-pool, .drop-zone {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 16px;
+            min-height: 300px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .drop-zone {
+            background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
+            border: 3px dashed #d69e2e;
+        }
+
+        .code-card {
+            background: white;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            cursor: move;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .code-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+
+        .code-card.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .drop-slot {
+            background: white;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e0;
+            min-height: 55px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .drop-slot.drag-over {
+            background: #e6fffa;
+            border-color: #38b2ac;
+            transform: scale(1.02);
+        }
+
+        .drop-slot.filled {
+            border-style: solid;
+            border-color: #667eea;
+        }
+
+        .slot-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 700;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            margin-top: 25px;
+            padding: 25px;
+            border-radius: 16px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feedback-success {
+            background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+            border-left: 5px solid #38a169;
+        }
+
+        .feedback-error {
+            background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%);
+            border-left: 5px solid #e53e3e;
+        }
+
+        .feedback h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .feedback-content {
+            color: #2d3748;
+            line-height: 1.8;
+        }
+
+        .feedback-content strong {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+        }
+
+        .feedback-content ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .feedback-content li {
+            margin-bottom: 8px;
+        }
+
+        .solution-code {
+            background: #2d3748;
+            color: #48bb78;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .solution-code div {
+            margin-bottom: 5px;
+        }
+
+        .completion-screen {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .completion-screen h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .completion-screen .trophy {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .final-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>🎮 CodeCards</h1>
+            <p>Aprende a programar armando código línea por línea</p>
+        </div>
+
+        <div id="gameScreen">
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-label">Nivel Actual</div>
+                    <div class="stat-value" id="currentLevel">1</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Puntos</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Intentos</div>
+                    <div class="stat-value" id="attempts">0</div>
+                </div>
+            </div>
+
+            <div class="challenge-section">
+                <div class="challenge-header">
+                    <h2 class="challenge-title" id="challengeTitle"></h2>
+                    <span class="difficulty-badge" id="difficultyBadge"></span>
+                </div>
+
+                <div class="challenge-description">
+                    <h3>🎯 Tu Misión:</h3>
+                    <p id="challengeDescription"></p>
+                </div>
+
+                <div class="game-area">
+                    <div class="cards-pool">
+                        <h3 class="section-title">📦 Líneas de Código</h3>
+                        <div id="cardsContainer"></div>
+                    </div>
+
+                    <div class="drop-zone">
+                        <h3 class="section-title">✨ Construye tu Código Aquí</h3>
+                        <div id="dropZone"></div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" id="checkBtn">Verificar Código</button>
+                    <button class="btn btn-secondary" id="resetBtn">Reiniciar</button>
+                    <button class="btn btn-next hidden" id="nextBtn">Siguiente Nivel →</button>
+                </div>
+
+                <div id="feedback" class="hidden"></div>
+            </div>
+        </div>
+
+        <div id="completionScreen" class="challenge-section hidden">
+            <div class="completion-screen">
+                <div class="trophy">🏆</div>
+                <h2>¡Felicitaciones!</h2>
+                <p style="font-size: 1.2rem; color: #4a5568; margin-bottom: 30px;">
+                    Has completado todos los desafíos de CodeCards
+                </p>
+                <div class="final-stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Puntos Totales</div>
+                        <div class="stat-value" id="finalScore">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Niveles Completados</div>
+                        <div class="stat-value" id="finalLevels">0</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="location.reload()">Jugar de Nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const challenges = [
+            {
+                title: "Imprime un Mensaje",
+                description: "Crea un programa que imprima 'Hola Mundo' en la consola",
+                difficulty: "facil",
+                lines: [
+                    "console.log('Hola Mundo');",
+                ],
+                explanation: {
+                    why: "Este es el programa más básico en programación. Sirve para verificar que tu entorno de desarrollo funciona correctamente y para entender cómo mostrar información al usuario.",
+                    how: "console.log() es una función que imprime mensajes en la consola del navegador o terminal. El texto entre comillas es el mensaje que queremos mostrar."
+                }
+            },
+            {
+                title: "Declara una Variable",
+                description: "Crea una variable llamada 'edad' y asígnale el valor 25",
+                difficulty: "facil",
+                lines: [
+                    "let edad = 25;",
+                ],
+                explanation: {
+                    why: "Las variables son contenedores que almacenan datos que pueden cambiar durante la ejecución del programa. Son fundamentales para guardar y manipular información.",
+                    how: "'let' declara una variable que puede cambiar su valor. 'edad' es el nombre de la variable, '=' asigna el valor, y '25' es el valor numérico que guardamos."
+                }
+            },
+            {
+                title: "Suma de Números",
+                description: "Crea dos variables con números y muestra su suma",
+                difficulty: "facil",
+                lines: [
+                    "let a = 10;",
+                    "let b = 20;",
+                    "console.log(a + b);",
+                ],
+                explanation: {
+                    why: "Las operaciones matemáticas son esenciales en programación para realizar cálculos, procesar datos numéricos y resolver problemas computacionales.",
+                    how: "Primero declaramos dos variables 'a' y 'b' con valores numéricos. Luego usamos el operador '+' para sumarlas y console.log() para mostrar el resultado (30)."
+                }
+            },
+            {
+                title: "Condicional Simple",
+                description: "Verifica si un número es mayor que 10 y muestra un mensaje",
+                difficulty: "medio",
+                lines: [
+                    "let numero = 15;",
+                    "if (numero > 10) {",
+                    "  console.log('El número es mayor que 10');",
+                    "}",
+                ],
+                explanation: {
+                    why: "Las condicionales permiten que el programa tome decisiones y ejecute diferentes acciones según las condiciones. Son la base de la lógica en programación.",
+                    how: "La estructura 'if' evalúa una condición (numero > 10). Si es verdadera, ejecuta el código entre llaves {}. En este caso, como 15 > 10, se imprime el mensaje."
+                }
+            },
+            {
+                title: "Bucle For",
+                description: "Imprime los números del 1 al 5 usando un bucle",
+                difficulty: "medio",
+                lines: [
+                    "for (let i = 1; i <= 5; i++) {",
+                    "  console.log(i);",
+                    "}",
+                ],
+                explanation: {
+                    why: "Los bucles permiten repetir acciones múltiples veces sin escribir código duplicado. Son esenciales para procesar listas, hacer cálculos repetitivos y automatizar tareas.",
+                    how: "El bucle 'for' tiene tres partes: inicialización (i=1), condición (i<=5), e incremento (i++). En cada iteración, imprime el valor actual de 'i' y lo incrementa hasta llegar a 5."
+                }
+            },
+            {
+                title: "Función Simple",
+                description: "Crea una función que salude a una persona por su nombre",
+                difficulty: "medio",
+                lines: [
+                    "function saludar(nombre) {",
+                    "  return 'Hola ' + nombre;",
+                    "}",
+                    "console.log(saludar('Ana'));",
+                ],
+                explanation: {
+                    why: "Las funciones permiten reutilizar código, organizarlo mejor y crear bloques lógicos que realizan tareas específicas. Son fundamentales para escribir código mantenible.",
+                    how: "'function' declara la función, 'nombre' es el parámetro que recibe, 'return' devuelve el resultado concatenando 'Hola ' con el nombre. Luego llamamos la función con 'Ana' como argumento."
+                }
+            },
+            {
+                title: "Array y Recorrido",
+                description: "Crea un array de frutas y muestra cada una",
+                difficulty: "dificil",
+                lines: [
+                    "let frutas = ['manzana', 'banana', 'naranja'];",
+                    "for (let i = 0; i < frutas.length; i++) {",
+                    "  console.log(frutas[i]);",
+                    "}",
+                ],
+                explanation: {
+                    why: "Los arrays (arreglos) permiten almacenar múltiples valores en una sola variable. Son esenciales para manejar colecciones de datos como listas de usuarios, productos, etc.",
+                    how: "Declaramos un array con corchetes [] que contiene 3 strings. Luego usamos un bucle for que recorre cada posición del array (0 a 2) usando 'frutas.length' para saber cuántos elementos hay."
+                }
+            },
+            {
+                title: "Objeto y Propiedades",
+                description: "Crea un objeto persona con nombre y edad, y muestra sus propiedades",
+                difficulty: "dificil",
+                lines: [
+                    "let persona = {",
+                    "  nombre: 'Carlos',",
+                    "  edad: 30",
+                    "};",
+                    "console.log(persona.nombre + ' tiene ' + persona.edad + ' años');",
+                ],
+                explanation: {
+                    why: "Los objetos permiten agrupar datos relacionados y representar entidades del mundo real. Son fundamentales en programación orientada a objetos y para estructurar datos complejos.",
+                    how: "Creamos un objeto con llaves {} que contiene propiedades (nombre y edad) con sus valores. Accedemos a las propiedades usando la notación de punto (persona.nombre) y las concatenamos en un mensaje."
+                }
+            }
+        ];
+
+        let currentChallengeIndex = 0;
+        let score = 0;
+        let attempts = 0;
+        let droppedCards = [];
+
+        function initGame() {
+            loadChallenge(currentChallengeIndex);
+        }
+
+        function loadChallenge(index) {
+            const challenge = challenges[index];
+            
+            document.getElementById('currentLevel').textContent = index + 1;
+            document.getElementById('challengeTitle').textContent = challenge.title;
+            document.getElementById('challengeDescription').textContent = challenge.description;
+            
+            const badge = document.getElementById('difficultyBadge');
+            badge.textContent = challenge.difficulty.charAt(0).toUpperCase() + challenge.difficulty.slice(1);
+            badge.className = 'difficulty-badge difficulty-' + challenge.difficulty;
+            
+            const shuffledLines = [...challenge.lines].sort(() => Math.random() - 0.5);
+            
+            const cardsContainer = document.getElementById('cardsContainer');
+            cardsContainer.innerHTML = '';
+            shuffledLines.forEach((line, idx) => {
+                const card = document.createElement('div');
+                card.className = 'code-card';
+                card.draggable = true;
+                card.textContent = line;
+                card.dataset.line = line;
+                card.dataset.id = 'card-' + idx;
+                
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+                
+                cardsContainer.appendChild(card);
+            });
+            
+            const dropZone = document.getElementById('dropZone');
+            dropZone.innerHTML = '';
+            droppedCards = new Array(challenge.lines.length).fill(null);
+            
+            for (let i = 0; i < challenge.lines.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'drop-slot';
+                slot.dataset.index = i;
+                slot.innerHTML = `<span class="slot-number">${i + 1}</span><span class="slot-content">Arrastra una línea aquí</span>`;
+                
+                slot.addEventListener('dragover', handleDragOver);
+                slot.addEventListener('drop', handleDrop);
+                slot.addEventListener('dragleave', handleDragLeave);
+                
+                dropZone.appendChild(slot);
+            }
+            
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('nextBtn').classList.add('hidden');
+            document.getElementById('checkBtn').disabled = false;
+        }
+
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            
+            const slot = e.currentTarget;
+            const index = parseInt(slot.dataset.index);
+            
+            if (droppedCards[index]) {
+                const oldCard = document.querySelector(`[data-id="${droppedCards[index]}"]`);
+                if (oldCard && oldCard.parentElement.classList.contains('drop-slot')) {
+                    document.getElementById('cardsContainer').appendChild(oldCard);
+                }
+            }
+            
+            const line = draggedElement.dataset.line;
+            const cardId = draggedElement.dataset.id;
+            
+            droppedCards[index] = cardId;
+            
+            slot.innerHTML = `<span class="slot-number">${index + 1}</span><span class="slot-content">${line}</span>`;
+            slot.classList.add('filled');
+            
+            draggedElement.remove();
+        }
+
+        document.getElementById('checkBtn').addEventListener('click', checkSolution);
+        document.getElementById('resetBtn').addEventListener('click', () => loadChallenge(currentChallengeIndex));
+        document.getElementById('nextBtn').addEventListener('click', nextChallenge);
+
+        function checkSolution() {
+            attempts++;
+            document.getElementById('attempts').textContent = attempts;
+            
+            const challenge = challenges[currentChallengeIndex];
+            const slots = document.querySelectorAll('.drop-slot');
+            const userSolution = [];
+            
+            slots.forEach(slot => {
+                const content = slot.querySelector('.slot-content');
+                if (content && !content.textContent.includes('Arrastra')) {
+                    userSolution.push(content.textContent);
+                }
+            });
+            
+            const isCorrect = userSolution.length === challenge.lines.length &&
+                            userSolution.every((line, idx) => line === challenge.lines[idx]);
+            
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('hidden', 'feedback-success', 'feedback-error');
+            
+            if (isCorrect) {
+                feedback.classList.add('feedback-success');
+                const points = Math.max(100 - (attempts - 1) * 20, 20);
+                score += points;
+                document.getElementById('score').textContent = score;
+                
+                feedback.innerHTML = `
+                    <h3>🎉 ¡Excelente! Código Correcto (+${points} puntos)</h3>
+                    <div class="feedback-content">
+                        <strong>¿Por qué este código es correcto?</strong>
+                        <p>${challenge.explanation.why}</p>
+                        
+                        <strong>¿Cómo funciona paso a paso?</strong>
+                        <p>${challenge.explanation.how}</p>
+                    </div>
+                `;
+                
+                document.getElementById('checkBtn').disabled = true;
+                document.getElementById('nextBtn').classList.remove('hidden');
+            } else {
+                feedback.classList.add('feedback-error');
+                
+                const solutionHTML = challenge.lines.map((line, idx) => 
+                    `<div>${idx + 1}. ${line}</div>`
+                ).join('');
+                
+                feedback.innerHTML = `
+                    <h3>❌ Código Incorrecto - ¡Sigue Intentando!</h3>
+                    <div class="feedback-content">
+                        <strong>La solución correcta es:</strong>
+                        <div class="solution-code">${solutionHTML}</div>
+                        
+                        <strong>¿Por qué este código funciona?</strong>
+                        <p>${challenge.explanation.why}</p>
+                        
+                        <strong>¿Cómo funciona paso a paso?</strong>
+                        <p>${challenge.explanation.how}</p>
+                        
+                        <p style="margin-top: 15px; font-weight: 600;">💡 Intenta de nuevo ordenando las líneas correctamente.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function nextChallenge() {
+            currentChallengeIndex++;
+            attempts = 0;
+            
+            if (currentChallengeIndex >= challenges.length) {
+                showCompletionScreen();
+            } else {
+                loadChallenge(currentChallengeIndex);
+            }
+        }
+
+        function showCompletionScreen() {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('completionScreen').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalLevels').textContent = challenges.length;
+        }
+
+        initGame();
+    </script>
+</body>
+</html>

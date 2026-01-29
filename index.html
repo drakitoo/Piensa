@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeCards - Aprende a Programar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: #1a202c;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.25rem;
+            opacity: 0.95;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #718096;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .game-board {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        .challenge-header {
+            margin-bottom: 2rem;
+        }
+
+        .challenge-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .challenge-description {
+            color: #718096;
+            font-size: 1rem;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cards-section, .drop-zone-section {
+            background: #f7fafc;
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-height: 200px;
+        }
+
+        .code-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            cursor: grab;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .code-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .code-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .drop-zone {
+            background: white;
+            border: 2px dashed #cbd5e0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            min-height: 60px;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .drop-zone-item {
+            background: #f7fafc;
+            border: 2px solid #667eea;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-btn {
+            background: #fc8181;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: background 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: #f56565;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feedback.success {
+            background: #c6f6d5;
+            border: 2px solid #48bb78;
+        }
+
+        .feedback.error {
+            background: #fed7d7;
+            border: 2px solid #f56565;
+        }
+
+        .feedback-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feedback.success .feedback-title {
+            color: #22543d;
+        }
+
+        .feedback.error .feedback-title {
+            color: #742a2a;
+        }
+
+        .solution-code {
+            background: #2d3748;
+            color: #68d391;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        .explanation {
+            margin-top: 1rem;
+        }
+
+        .explanation h4 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+
+        .explanation p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .completion-screen {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .completion-screen h2 {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .completion-screen p {
+            font-size: 1.25rem;
+            color: #4a5568;
+            margin-bottom: 2rem;
+        }
+
+        .final-score {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #764ba2;
+            margin: 1rem 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #a0aec0;
+            padding: 2rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 CodeCards</h1>
+            <p>Aprende a programar armando código línea por línea</p>
+        </div>
+
+        <div class="game-stats">
+            <div class="stat-card">
+                <div class="stat-label">Nivel</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Puntos</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Intentos</div>
+                <div class="stat-value" id="attempts">0</div>
+            </div>
+        </div>
+
+        <div class="game-board" id="gameBoard">
+            <!-- Game content will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+        const challenges = [
+            {
+                id: 1,
+                title: "Nivel 1: Tu Primer Programa",
+                description: "Ordena las líneas para imprimir 'Hola Mundo' en la consola",
+                lines: [
+                    "console.log('Hola Mundo');",
+                ],
+                explanation: {
+                    why: "Este es el programa más básico en JavaScript. console.log() es una función que imprime mensajes en la consola del navegador, útil para ver resultados y depurar código.",
+                    how: "1. console.log() es una función incorporada de JavaScript\n2. Toma un argumento (en este caso, el texto 'Hola Mundo')\n3. Imprime ese argumento en la consola del navegador\n4. El punto y coma (;) marca el final de la instrucción"
+                }
+            },
+            {
+                id: 2,
+                title: "Nivel 2: Variables",
+                description: "Crea una variable y muestra su valor",
+                lines: [
+                    "let nombre = 'Ana';",
+                    "console.log(nombre);"
+                ],
+                explanation: {
+                    why: "Las variables son contenedores que almacenan datos. Nos permiten guardar información y reutilizarla en diferentes partes del programa.",
+                    how: "1. 'let' declara una nueva variable\n2. 'nombre' es el identificador de la variable\n3. El operador '=' asigna el valor 'Ana' a la variable\n4. console.log(nombre) imprime el valor almacenado en la variable"
+                }
+            },
+            {
+                id: 3,
+                title: "Nivel 3: Operaciones Matemáticas",
+                description: "Suma dos números y muestra el resultado",
+                lines: [
+                    "let a = 5;",
+                    "let b = 3;",
+                    "let suma = a + b;",
+                    "console.log(suma);"
+                ],
+                explanation: {
+                    why: "Las operaciones matemáticas son fundamentales en programación. Nos permiten realizar cálculos y manipular datos numéricos.",
+                    how: "1. Declaramos dos variables 'a' y 'b' con valores numéricos\n2. Creamos una tercera variable 'suma' que almacena el resultado de a + b\n3. El operador '+' suma los valores de las variables\n4. Imprimimos el resultado (8) en la consola"
+                }
+            },
+            {
+                id: 4,
+                title: "Nivel 4: Condicionales",
+                description: "Verifica si un número es mayor que 10",
+                lines: [
+                    "let numero = 15;",
+                    "if (numero > 10) {",
+                    "  console.log('Es mayor que 10');",
+                    "}"
+                ],
+                explanation: {
+                    why: "Los condicionales permiten que el programa tome decisiones. El código se ejecuta solo si se cumple una condición específica.",
+                    how: "1. Declaramos una variable 'numero' con valor 15\n2. 'if' evalúa la condición entre paréntesis\n3. 'numero > 10' compara si 15 es mayor que 10 (verdadero)\n4. Como la condición es verdadera, ejecuta el código dentro de las llaves\n5. Imprime 'Es mayor que 10'"
+                }
+            },
+            {
+                id: 5,
+                title: "Nivel 5: Bucle For",
+                description: "Imprime los números del 1 al 5",
+                lines: [
+                    "for (let i = 1; i <= 5; i++) {",
+                    "  console.log(i);",
+                    "}"
+                ],
+                explanation: {
+                    why: "Los bucles permiten repetir código múltiples veces sin escribirlo manualmente. Son esenciales para procesar listas de datos o realizar tareas repetitivas.",
+                    how: "1. 'for' inicia el bucle con tres partes:\n2. 'let i = 1' inicializa el contador en 1\n3. 'i <= 5' es la condición (continúa mientras i sea menor o igual a 5)\n4. 'i++' incrementa i en 1 después de cada iteración\n5. El bucle imprime 1, 2, 3, 4, 5 en iteraciones sucesivas"
+                }
+            },
+            {
+                id: 6,
+                title: "Nivel 6: Arrays",
+                description: "Crea un array y muestra su primer elemento",
+                lines: [
+                    "let frutas = ['manzana', 'banana', 'naranja'];",
+                    "console.log(frutas[0]);"
+                ],
+                explanation: {
+                    why: "Los arrays (arreglos) almacenan múltiples valores en una sola variable. Son perfectos para manejar listas de datos relacionados.",
+                    how: "1. Declaramos un array 'frutas' con tres elementos entre corchetes\n2. Los arrays usan índices que empiezan en 0\n3. frutas[0] accede al primer elemento ('manzana')\n4. frutas[1] sería 'banana', frutas[2] sería 'naranja'"
+                }
+            },
+            {
+                id: 7,
+                title: "Nivel 7: Funciones",
+                description: "Define y llama una función que saluda",
+                lines: [
+                    "function saludar(nombre) {",
+                    "  return 'Hola ' + nombre;",
+                    "}",
+                    "console.log(saludar('Carlos'));"
+                ],
+                explanation: {
+                    why: "Las funciones son bloques de código reutilizables. Nos permiten organizar el código, evitar repetición y crear abstracciones útiles.",
+                    how: "1. 'function' declara una nueva función llamada 'saludar'\n2. 'nombre' es un parámetro que recibe la función\n3. 'return' devuelve el resultado: 'Hola ' concatenado con el nombre\n4. saludar('Carlos') llama a la función con el argumento 'Carlos'\n5. Imprime 'Hola Carlos'"
+                }
+            },
+            {
+                id: 8,
+                title: "Nivel 8: Objetos",
+                description: "Crea un objeto y accede a sus propiedades",
+                lines: [
+                    "let persona = {",
+                    "  nombre: 'María',",
+                    "  edad: 25",
+                    "};",
+                    "console.log(persona.nombre);"
+                ],
+                explanation: {
+                    why: "Los objetos agrupan datos relacionados en propiedades. Son fundamentales para modelar entidades del mundo real en código.",
+                    how: "1. Creamos un objeto 'persona' con llaves {}\n2. Definimos propiedades con formato 'clave: valor'\n3. 'nombre' y 'edad' son propiedades del objeto\n4. Usamos notación de punto (persona.nombre) para acceder a propiedades\n5. Imprime 'María'"
+                }
+            }
+        ];
+
+        let currentChallengeIndex = 0;
+        let score = 0;
+        let attempts = 0;
+        let userSolution = [];
+        let availableCards = [];
+
+        function init() {
+            loadChallenge();
+        }
+
+        function loadChallenge() {
+            const challenge = challenges[currentChallengeIndex];
+            availableCards = [...challenge.lines].sort(() => Math.random() - 0.5);
+            userSolution = [];
+            
+            updateStats();
+            renderChallenge();
+        }
+
+        function updateStats() {
+            document.getElementById('level').textContent = currentChallengeIndex + 1;
+            document.getElementById('score').textContent = score;
+            document.getElementById('attempts').textContent = attempts;
+        }
+
+        function renderChallenge() {
+            const challenge = challenges[currentChallengeIndex];
+            const gameBoard = document.getElementById('gameBoard');
+            
+            gameBoard.innerHTML = `
+                <div class="challenge-header">
+                    <h2 class="challenge-title">${challenge.title}</h2>
+                    <p class="challenge-description">${challenge.description}</p>
+                </div>
+                
+                <div class="game-area">
+                    <div class="cards-section">
+                        <div class="section-title">
+                            📦 Líneas de Código Disponibles
+                        </div>
+                        <div class="cards-container" id="cardsContainer">
+                            ${availableCards.length > 0 ? 
+                                availableCards.map((line, index) => `
+                                    <div class="code-card" draggable="true" data-index="${index}">
+                                        ${line}
+                                    </div>
+                                `).join('') :
+                                '<div class="empty-state">¡Todas las cartas han sido usadas!</div>'
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="drop-zone-section">
+                        <div class="section-title">
+                            ✨ Tu Solución (arrastra aquí)
+                        </div>
+                        <div class="drop-zone" id="dropZone">
+                            ${userSolution.length > 0 ?
+                                userSolution.map((line, index) => `
+                                    <div class="drop-zone-item">
+                                        <span>${line}</span>
+                                        <button class="remove-btn" onclick="removeLine(${index})">✕</button>
+                                    </div>
+                                `).join('') :
+                                '<div class="empty-state">Arrastra las líneas de código aquí en el orden correcto</div>'
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="checkSolution()" ${userSolution.length === 0 ? 'disabled' : ''}>
+                        Verificar Solución
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetChallenge()">
+                        Reiniciar
+                    </button>
+                </div>
+                
+                <div id="feedback"></div>
+            `;
+            
+            setupDragAndDrop();
+        }
+
+        function setupDragAndDrop() {
+            const cards = document.querySelectorAll('.code-card');
+            const dropZone = document.getElementById('dropZone');
+            
+            cards.forEach(card => {
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+            });
+            
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('drop', handleDrop);
+            dropZone.addEventListener('dragleave', handleDragLeave);
+        }
+
+        let draggedIndex = null;
+
+        function handleDragStart(e) {
+            draggedIndex = parseInt(e.target.dataset.index);
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('dropZone').classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            if (e.target.id === 'dropZone') {
+                e.target.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('dropZone').classList.remove('drag-over');
+            
+            if (draggedIndex !== null) {
+                const line = availableCards[draggedIndex];
+                userSolution.push(line);
+                availableCards.splice(draggedIndex, 1);
+                draggedIndex = null;
+                renderChallenge();
+            }
+        }
+
+        function removeLine(index) {
+            const line = userSolution[index];
+            availableCards.push(line);
+            userSolution.splice(index, 1);
+            renderChallenge();
+        }
+
+        function checkSolution() {
+            attempts++;
+            const challenge = challenges[currentChallengeIndex];
+            const isCorrect = JSON.stringify(userSolution) === JSON.stringify(challenge.lines);
+            
+            const feedbackDiv = document.getElementById('feedback');
+            
+            if (isCorrect) {
+                const points = Math.max(100 - (attempts - 1) * 20, 20);
+                score += points;
+                
+                feedbackDiv.innerHTML = `
+                    <div class="feedback success">
+                        <div class="feedback-title">
+                            ✅ ¡Excelente! Código Correcto
+                        </div>
+                        <p><strong>+${points} puntos</strong></p>
+                        
+                        <div class="explanation">
+                            <h4>💡 ¿Por qué funciona este código?</h4>
+                            <p>${challenge.explanation.why}</p>
+                            
+                            <h4>🔍 ¿Cómo funciona paso a paso?</h4>
+                            <p style="white-space: pre-line;">${challenge.explanation.how}</p>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <button class="btn btn-primary" onclick="nextChallenge()">
+                                Siguiente Nivel →
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback error">
+                        <div class="feedback-title">
+                            ❌ Código Incorrecto
+                        </div>
+                        <p>El orden de las líneas no es correcto. ¡Sigue intentando!</p>
+                        
+                        <h4 style="margin-top: 1rem; color: #742a2a;">📝 Solución Correcta:</h4>
+                        <div class="solution-code">${challenge.lines.join('\n')}</div>
+                        
+                        <div class="explanation">
+                            <h4>💡 ¿Por qué funciona este código?</h4>
+                            <p>${challenge.explanation.why}</p>
+                            
+                            <h4>🔍 ¿Cómo funciona paso a paso?</h4>
+                            <p style="white-space: pre-line;">${challenge.explanation.how}</p>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <button class="btn btn-secondary" onclick="resetChallenge()">
+                                Intentar de Nuevo
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            updateStats();
+        }
+
+        function resetChallenge() {
+            attempts = 0;
+            loadChallenge();
+        }
+
+        function nextChallenge() {
+            currentChallengeIndex++;
+            attempts = 0;
+            
+            if (currentChallengeIndex >= challenges.length) {
+                showCompletion();
+            } else {
+                loadChallenge();
+            }
+        }
+
+        function showCompletion() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = `
+                <div class="completion-screen">
+                    <h2>🎉 ¡Felicitaciones!</h2>
+                    <p>Has completado todos los desafíos de CodeCards</p>
+                    <div class="final-score">${score} puntos</div>
+                    <p>Has aprendido los fundamentos de la programación en JavaScript</p>
+                    <button class="btn btn-primary" onclick="restartGame()">
+                        Jugar de Nuevo
+                    </button>
+                </div>
+            `;
+        }
+
+        function restartGame() {
+            currentChallengeIndex = 0;
+            score = 0;
+            attempts = 0;
+            init();
+        }
+
+        // Initialize game on load
+        init();
+    </script>
+</body>
+</html>
